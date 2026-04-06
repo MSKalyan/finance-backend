@@ -80,7 +80,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'finance_backend.wsgi.application'
 
-
+ALLOWED_HOSTS = [
+    ".onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
