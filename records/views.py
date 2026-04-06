@@ -21,7 +21,7 @@ class RecordViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     throttle_classes = [RecordThrottle]    
     filterset_fields = {
-        'type': ['exact'],              # income / expense
+        'type': ['exact'],           
         'category': ['exact', 'icontains'],
         'date': ['exact', 'gte', 'lte'],
         'amount': ['gte', 'lte'],
@@ -33,9 +33,8 @@ class RecordViewSet(viewsets.ModelViewSet):
         'description',
     ]
 
-    # Ordering (sorting)
     ordering_fields = ['date', 'amount']
-    ordering = ['-date']  # default
+    ordering = ['-date'] 
     def get_queryset(self):
         queryset = super().get_queryset() 
 

@@ -11,10 +11,10 @@ class RecordPermission(BasePermission):
             return True
 
         if user.role == 'analyst':
-            return request.method in SAFE_METHODS  # GET/HEAD/OPTIONS
+            return request.method in SAFE_METHODS 
 
         if user.role == 'viewer':
-            return False  # no records access
+            return False  
 
         return False
 

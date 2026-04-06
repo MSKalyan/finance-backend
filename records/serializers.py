@@ -19,11 +19,9 @@ class RecordSerializer(serializers.ModelSerializer):
         return value
     
     def validate_date(self, value):
-        # Rule 1: No future dates
         if value > date.today():
             raise serializers.ValidationError("Date cannot be in the future")
 
-        # Rule 2: No unrealistic old dates
         if value.year < 2000:
             raise serializers.ValidationError("Year must be >= 2000")
 
