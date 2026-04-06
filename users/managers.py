@@ -1,0 +1,7 @@
+# managers.py
+
+from django.db import models
+
+class ActiveRecordsManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
