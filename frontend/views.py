@@ -1,13 +1,19 @@
 from django.shortcuts import render, redirect
 import requests
-BASE_URL = "http://127.0.0.1:8000/api"
+
+def get_base_url(request):
+    return f"{request.scheme}://{request.get_host()}/api"
+
 def auth_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.session.get("access"):
             return redirect("login")
         return view_func(request, *args, **kwargs)
     return wrapper
-
+def home_view(request):
+    if request.session.get("access"):
+        return redirect("dashboard")
+    return render(request, "frontend/home.html")
 def register_view(request):
     if request.method == "POST":
         payload = {
@@ -15,8 +21,9 @@ def register_view(request):
             "password": request.POST.get("password"),
             "role": request.POST.get("role"),
         }
+        base_url = get_base_url(request)
 
-        response = requests.post(f"{BASE_URL}/register/", json=payload)
+        response = requests.post(f"{base_url}/register/", json=payload)
 
         if response.status_code == 201:
             return redirect("login")
@@ -38,8 +45,10 @@ def login_view(request):
             "email": request.POST.get("email"),
             "password": request.POST.get("password"),
         }
-
-        response = requests.post(f"{BASE_URL}/login/", json=payload)
+        base_url = get_base_url(request)
+        print(get_base_url(request))
+        print("PAYLOAD:", payload)
+        response = requests.post(f"{base_url}/login/", json=payload)
 
         print("STATUS:", response.status_code)
         print("RESPONSE:", response.text)
@@ -81,13 +90,15 @@ def get_valid_access_token(request):
     refresh = request.session.get("refresh")
 
     headers = {"Authorization": f"Bearer {access}"}
-    test = requests.get(f"{BASE_URL}/dashboard/summary/", headers=headers)
+    base_url = get_base_url(request)
+
+    test = requests.get(f"{base_url}/dashboard/summary/", headers=headers)
 
     if test.status_code == 200:
         return access
 
     refresh_response = requests.post(
-        f"{BASE_URL}/refresh/",
+        f"{base_url}/refresh/",
         json={"refresh": refresh}
     )
 
@@ -111,22 +122,23 @@ def dashboard_view(request):
     data = {}
 
     # Summary
-    res = requests.get(f"{BASE_URL}/dashboard/summary/", headers=headers)
+    base_url = get_base_url(request)
+    res = requests.get(f"{base_url}/dashboard/summary/", headers=headers)
     if res.status_code == 200:
         data["summary"] = res.json()
 
     # Category breakdown
-    res = requests.get(f"{BASE_URL}/dashboard/categories/", headers=headers)
+    res = requests.get(f"{base_url}/dashboard/categories/", headers=headers)
     if res.status_code == 200:
         data["categories"] = res.json()
 
     # Recent activity
-    res = requests.get(f"{BASE_URL}/dashboard/recent/", headers=headers)
+    res = requests.get(f"{base_url}/dashboard/recent/", headers=headers)
     if res.status_code == 200:
         data["recent"] = res.json()
 
     # Monthly trends
-    res = requests.get(f"{BASE_URL}/dashboard/trends/", headers=headers)
+    res = requests.get(f"{base_url}/dashboard/trends/", headers=headers)
     if res.status_code == 200:
         data["trends"] = res.json()
 
@@ -144,7 +156,7 @@ def records_view(request):
     params = request.GET.dict()
 
     response = requests.get(
-        f"{BASE_URL}/records/",
+        f"{base_url}/records/",
         headers=headers,
         params=params
     )
@@ -186,8 +198,9 @@ def create_record_view(request):
             "date": request.POST.get("date"),
             "description": request.POST.get("description"),
         }
+        base_url = get_base_url(request)
 
-        requests.post(f"{BASE_URL}/records/", json=payload, headers=headers)
+        requests.post(f"{base_url}/records/", json=payload, headers=headers)
         return redirect("records")
 
     return render(request, "frontend/record_form.html")
@@ -212,9 +225,10 @@ def edit_record_view(request, pk):
 
         # remove empty values (important for PATCH)
         payload = {k: v for k, v in payload.items() if v}
+        base_url = get_base_url(request)
 
         res = requests.patch(
-            f"{BASE_URL}/records/{pk}/",
+            f"{base_url}/records/{pk}/",
             json=payload,
             headers=headers
         )
@@ -223,7 +237,8 @@ def edit_record_view(request, pk):
 
         return redirect("records")
 
-    res = requests.get(f"{BASE_URL}/records/{pk}/", headers=headers)
+    base_url = get_base_url(request)
+    res = requests.get(f"{base_url}/records/{pk}/", headers=headers)
     record = res.json() if res.status_code == 200 else {}
 
     return render(request, "frontend/record_form.html", {"record": record})
@@ -235,7 +250,8 @@ def delete_record_view(request, pk):
 
     token = get_valid_access_token(request)
     headers = {"Authorization": f"Bearer {token}"}
+    base_url = get_base_url(request)
 
-    requests.delete(f"{BASE_URL}/records/{pk}/", headers=headers)
+    requests.delete(f"{base_url}/records/{pk}/", headers=headers)
 
     return redirect("records")
