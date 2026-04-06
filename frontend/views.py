@@ -14,6 +14,8 @@ def home_view(request):
     if request.session.get("access"):
         return redirect("dashboard")
     return render(request, "frontend/home.html")
+from users.serializers import RegisterSerializer  # ADD THIS
+
 def register_view(request):
     if request.method == "POST":
         payload = {
@@ -21,66 +23,44 @@ def register_view(request):
             "password": request.POST.get("password"),
             "role": request.POST.get("role"),
         }
-        base_url = get_base_url(request)
 
-        response = requests.post(f"{base_url}/register/", json=payload)
+        serializer = RegisterSerializer(data=payload)
 
-        if response.status_code == 201:
+        if serializer.is_valid():
+            serializer.save()
             return redirect("login")
 
-        try:
-            error_message = response.json()
-        except:
-            error_message = response.text or "Registration failed"
-
         return render(request, "frontend/register.html", {
-            "error": error_message
+            "error": serializer.errors
         })
 
     return render(request, "frontend/register.html")
 
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+
 def login_view(request):
     if request.method == "POST":
-        payload = {
-            "email": request.POST.get("email"),
-            "password": request.POST.get("password"),
-        }
-        base_url = get_base_url(request)
-        print(get_base_url(request))
-        print("PAYLOAD:", payload)
-        response = requests.post(f"{base_url}/login/", json=payload)
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
-        print("STATUS:", response.status_code)
-        print("RESPONSE:", response.text)
+        user = authenticate(username=email, password=password)
 
-        if response.status_code == 200:
-            try:
-                tokens = response.json()
-            except Exception:
-                return render(request, "frontend/login.html", {
-                    "error": "Invalid server response"
-                })
+        if user:
+            refresh = RefreshToken.for_user(user)
 
-            access = tokens.get("access")
-            refresh = tokens.get("refresh")
-            role=tokens.get("role")
-            if access and refresh:
-                request.session["access"] = access
-                request.session["refresh"] = refresh
-                request.session["role"] = role
+            request.session["access"] = str(refresh.access_token)
+            request.session["refresh"] = str(refresh)
+            request.session["role"] = user.role
 
-                return redirect("dashboard")   # MUST exit here
-
-            # if tokens missing → treat as failure
-            return render(request, "frontend/login.html", {
-                "error": "Login failed (tokens missing)"
-            })
+            return redirect("dashboard")
 
         return render(request, "frontend/login.html", {
             "error": "Invalid credentials"
         })
 
     return render(request, "frontend/login.html")
+
 def logout_view(request):
     request.session.flush()
     return redirect("login")
@@ -154,7 +134,7 @@ def records_view(request):
     headers = {"Authorization": f"Bearer {token}"}
 
     params = request.GET.dict()
-
+    base_url= get_base_url(request)
     response = requests.get(
         f"{base_url}/records/",
         headers=headers,
