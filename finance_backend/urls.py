@@ -19,10 +19,11 @@ from django.urls import path,include
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 
 urlpatterns = [
+    path("", include("frontend.urls")),
     path('admin/', admin.site.urls),
     path('api/token/',TokenObtainPairView.as_view()),
     path('api/token/refresh/',TokenRefreshView.as_view()),
-    path('api/users/',include('users.urls')),
+    path('api/',include('users.urls')),
     path('api/',include('records.urls')),
     path('api/dashboard/',include('dashboard.urls')),
 

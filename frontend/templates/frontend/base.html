@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Finance Dashboard</title>
+</head>
+<body>
+
+<nav>
+    <a href="/dashboard/">Dashboard</a>
+{% if request.session.role != "viewer" %}
+
+<a href="/records/">View Records</a>
+{% endif %}    <a href="/logout/">Logout</a>
+</nav>
+
+<hr>
+
+{% block content %}
+{% endblock %}
+
+</body>
+</html>

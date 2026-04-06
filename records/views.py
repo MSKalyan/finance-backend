@@ -27,7 +27,6 @@ class RecordViewSet(viewsets.ModelViewSet):
         'amount': ['gte', 'lte'],
     }
 
-    # Search (keyword-based)
     search_fields = [
         'category',
         'custom_category',
@@ -38,7 +37,7 @@ class RecordViewSet(viewsets.ModelViewSet):
     ordering_fields = ['date', 'amount']
     ordering = ['-date']  # default
     def get_queryset(self):
-        queryset = super().get_queryset()  # 🔥 shared data model
+        queryset = super().get_queryset() 
 
         category = self.request.query_params.get('category')
         category=category.lower().strip() if category else None

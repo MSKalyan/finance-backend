@@ -25,11 +25,11 @@ class SummaryView(APIView):
         expense = records.filter(type='expense').aggregate(
             total=Sum('amount')
         )['total'] or 0
-
+        balance = income - expense
         return Response({
             "total_income": income,
             "total_expense": expense,
-            "net_balance": income - expense
+            "net_balance": balance
         })
 
 class CategoryBreakdownView(APIView):

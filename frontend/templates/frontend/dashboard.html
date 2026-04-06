@@ -1,0 +1,73 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+<h2>Dashboard</h2>
+
+<p><strong>Role:</strong> {{ request.session.role |default:"Unknown"}}</p>
+
+<hr>
+
+<!-- SUMMARY -->
+<h3>Summary</h3>
+<p>Income: ₹ {{ data.summary.total_income|default:0 }}</p>
+<p>Expense: ₹ {{ data.summary.total_expense|default:0 }}</p>
+<p>Balance: ₹ {{ data.summary.net_balance|default:0 }}</p>
+
+<hr>
+
+<!-- CATEGORY BREAKDOWN -->
+<h3>Category Breakdown</h3>
+<ul>
+{% for c in data.categories %}
+<li>
+        {{ c.category }} → 
+        Income: ₹{{ c.total_income|default:0 }} |
+        Expense: ₹{{ c.total_expense|default:0 }}
+    </li>
+{% empty %}
+    <li>No data</li>
+{% endfor %}
+</ul>
+
+<hr>
+
+<!-- RECENT ACTIVITY -->
+<h3>Recent Transactions</h3>
+<ul>
+{% for r in data.recent %}
+    <li>
+        {{ r.type }} - ₹{{ r.amount }} ({{ r.category }}) on {{ r.date }}
+    </li>
+{% empty %}
+    <li>No recent activity</li>
+{% endfor %}
+</ul>
+
+<hr>
+
+<!-- MONTHLY TRENDS -->
+<h3>Monthly Trends</h3>
+<ul>
+{% for t in data.trends %}
+     <li>
+        {{ t.month }} → 
+        Income: ₹{{ t.total_income|default:0 }} | 
+        Expense: ₹{{ t.total_expense|default:0 }}
+    </li>
+{% empty %}
+    <li>No trend data</li>
+{% endfor %}
+</ul>
+
+<hr>
+
+<!-- ACTIONS -->
+{% if request.session.role == "admin" %}
+    <a href="/records/create/">Add Record</a>
+{% endif %}
+{% if request.session.role != "viewer" %}
+
+<a href="/records/">View Records</a>
+{% endif %}
+{% endblock %}

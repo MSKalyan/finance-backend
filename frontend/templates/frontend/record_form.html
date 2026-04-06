@@ -1,0 +1,79 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+<h2>
+    {% if record %} Edit Record {% else %} Create Record {% endif %}
+</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <input 
+        type="number" 
+        name="amount" 
+        placeholder="Amount" 
+        value="{{ record.amount|default:'' }}"
+        required
+    ><br><br>
+
+    <select name="type">
+        <option value="income" {% if record.type == "income" %}selected{% endif %}>Income</option>
+        <option value="expense" {% if record.type == "expense" %}selected{% endif %}>Expense</option>
+    </select><br><br>
+
+  <select name="category" id="category" onchange="toggleCustomCategory()">
+
+    <option value="food" {% if record.category == "food" %}selected{% endif %}>Food</option>
+
+    <option value="salary" {% if record.category == "salary" %}selected{% endif %}>Salary</option>
+
+    <option value="transport" {% if record.category == "transport" %}selected{% endif %}>Transport</option>
+
+    <option value="rent" {% if record.category == "rent" %}selected{% endif %}>Rent</option>
+
+    <option value="other" {% if record.category == "other" %}selected{% endif %}>Other</option>
+
+</select><br><br>
+<div id="customCategoryDiv" style="display:none;">
+    <input 
+        type="text" 
+        name="custom_category" 
+        placeholder="Enter custom category"
+        value="{{ record.custom_category|default:'' }}"
+    >
+</div>
+
+    <input 
+        type="date" 
+        name="date"
+        value="{{ record.date|default:'' }}"
+    ><br><br>
+
+    <textarea name="description" placeholder="Description">
+{{ record.description|default:'' }}
+    </textarea><br><br>
+
+    <button type="submit">
+        {% if record %} Update {% else %} Create {% endif %}
+    </button>
+
+</form>
+
+
+<script>
+function toggleCustomCategory() {
+    const category = document.getElementById("category").value;
+    const customDiv = document.getElementById("customCategoryDiv");
+
+    if (category === "other") {
+        customDiv.style.display = "block";
+    } else {
+        customDiv.style.display = "none";
+    }
+}
+
+// run on page load (for edit case)
+window.onload = toggleCustomCategory;
+</script>
+{% endblock %}

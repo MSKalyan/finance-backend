@@ -1,0 +1,102 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+<h2>Records</h2>
+
+<p><strong>Role:</strong> {{ request.session.role }}</p>
+
+<hr>
+
+<!-- FILTER + ORDER -->
+<form method="get">
+<input 
+    type="text" 
+    name="search" 
+    placeholder="Search records..."
+    value="{{ request.GET.search }}"
+>
+    <select name="type">
+        <option value="">All</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+    </select>
+
+
+    <select name="ordering">
+        <option value="">Sort</option>
+        <option value="-date">Latest</option>
+        <option value="date">Oldest</option>
+        <option value="-amount">Amount High</option>
+        <option value="amount">Amount Low</option>
+    </select>
+
+    <button type="submit">Apply</button>
+</form>
+
+<hr>
+
+{% if request.session.role == "admin" %}
+    <a href="/records/create/">➕ Add Record</a>
+{% endif %}
+
+<br><br>
+
+<table border="1" cellpadding="8">
+<tr>
+    <th>Amount</th>
+    <th>Type</th>
+    <th>Category</th>
+    <th>Date</th>
+    <th>Description</th>
+
+    {% if request.session.role == "admin" %}
+        <th>Actions</th>
+    {% endif %}
+</tr>
+
+{% for r in records %}
+<tr>
+    <td>₹ {{ r.amount }}</td>
+    <td>{{ r.type }}</td>
+<td>
+    {% if r.category == "other" %}
+        {{ r.custom_category }}
+    {% else %}
+        {{ r.category }}
+    {% endif %}
+</td>
+    <td>{{ r.date }}</td>
+    <td>{{ r.description|default:"-" }}</td>
+
+    {% if request.session.role == "admin" %}
+    <td>
+        <a href="/records/edit/{{ r.id }}/">Edit</a> |
+        <a href="/records/delete/{{ r.id }}/">Delete</a>
+    </td>
+    {% endif %}
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6">No records found</td>
+</tr>
+{% endfor %}
+
+</table>
+
+<br>
+
+<!-- PAGINATION -->
+<div>
+
+{% if prev_url %}
+    <a href="?page={{ request.GET.page|add:"-1"|default:1 }}">⬅ Prev</a>
+{% endif %}
+
+{% if next_url %}
+    <a href="?page={{ request.GET.page|add:"1"|default:2 }}">Next ➡</a>
+{% endif %}
+
+</div>
+
+{% endblock %}
