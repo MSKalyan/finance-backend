@@ -67,12 +67,12 @@ It is built using Django and Django REST Framework, with a lightweight template-
 
 ## Tech Stack
 
-* Django
-* Django REST Framework
-* SimpleJWT
-* SQLite
-* HTML Templates (for demo UI)
-
+- Backend: Django, Django REST Framework
+- Authentication: JWT (SimpleJWT)
+- Database: SQLite (Development)
+- API Documentation: Swagger (drf-yasg)
+- Deployment: Render
+- Frontend: Django Templates (for demo)
 ---
 
 ## Project Setup
@@ -163,21 +163,59 @@ http://127.0.0.1:8000/
 ## Demo Credentials
 
 * **Admin**
-
-  * Email: [admin@test.com](mailto:admin@test.com)
-  * Password: admin
+  - Email: admin@test.com
+  - Password: admin123
 
 * **Analyst**
-
-  * Email: [analyst@test.com](mailto:analyst@test.com)
-  * Password: analyst
+  - Email: analyst@test.com
+  - Password: analyst123
 
 * **Viewer**
-
-  * Email: [viewer@test.com](mailto:viewer@test.com)
-  * Password: viewer
-
+  - Email: viewer@test.com
+  - Password: viewer123
 ---
+
+## Live Deployment
+
+Base URL:
+https://finance-backend-gyer.onrender.com/
+
+Swagger Docs:
+https://finance-backend-gyer.onrender.com/swagger/
+
+
+## Authentication
+
+This project uses JWT-based authentication.
+
+### Steps:
+
+1. Call login endpoint:
+   POST /api/users/login/
+
+2. Copy the access token from response
+
+3. Click "Authorize" in Swagger and enter:
+   Bearer <access_token>
+
+4. Use protected endpoints
+
+Note:
+- Access tokens are required for all secured APIs
+- Tokens must be passed in the Authorization header
+
+
+## How to Test (Quick Guide)
+
+1. Open Swagger:
+   https://finance-backend-gyer.onrender.com/swagger/
+
+2. Use `/api/users/login/` to get token
+
+3. Click "Authorize" and paste:
+   Bearer <token>
+
+4. Test any API endpoint
 
 ## API Endpoints (Core)
 

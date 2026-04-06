@@ -41,11 +41,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_yasg',
     'django_filters',
     'users',
     'records',
     'dashboard',
     'frontend',
+
 ]
 
 MIDDLEWARE = [
@@ -95,7 +97,18 @@ DATABASES = {
     }
 }
 
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,  # disable username/password login
 
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'Enter: Bearer <your_token>'
+        }
+    }
+}
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

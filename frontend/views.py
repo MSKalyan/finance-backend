@@ -24,8 +24,10 @@ def auth_required(view_func):
             return redirect("login")
 
         user_id = request.session.get("user_id")
-        if user_id:
-            request.user = User.objects.get(id=user_id)
+        if not user_id:
+            return redirect("login")
+
+        request.user = User.objects.get(id=user_id)  
 
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -151,17 +153,15 @@ def create_record_view(request):
     headers = {"Authorization": f"Bearer {token}"}
 
     if request.method == "POST":
-        payload = {
-            "amount": request.POST.get("amount"),
-            "type": request.POST.get("type"),
-            "category": request.POST.get("category"),
-            "custom_category": request.POST.get("custom_category"),
-            "date": request.POST.get("date"),
-            "description": request.POST.get("description"),
-        }
-
-        base_url = get_base_url(request)
-        requests.post(f"{base_url}/records/", json=payload, headers=headers)
+        Record.objects.create(
+            amount=request.POST.get("amount"),
+            type=request.POST.get("type"),
+            category=request.POST.get("category"),
+            custom_category=request.POST.get("custom_category"),
+            date=request.POST.get("date"),
+            description=request.POST.get("description"),
+            created_by=request.user
+        )
 
         return redirect("records")
 
@@ -174,35 +174,20 @@ def edit_record_view(request, pk):
     if request.session.get("role") != "admin":
         return redirect("records")
 
-    token = get_valid_access_token(request)
-    headers = {"Authorization": f"Bearer {token}"}
-    base_url = get_base_url(request)
+    record = Record.objects.get(id=pk)
 
     if request.method == "POST":
-        payload = {
-            "amount": request.POST.get("amount"),
-            "type": request.POST.get("type"),
-            "category": request.POST.get("category"),
-            "custom_category": request.POST.get("custom_category"),
-            "date": request.POST.get("date"),
-            "description": request.POST.get("description"),
-        }
-
-        payload = {k: v for k, v in payload.items() if v}
-
-        requests.patch(
-            f"{base_url}/records/{pk}/",
-            json=payload,
-            headers=headers
-        )
+        record.amount = request.POST.get("amount")
+        record.type = request.POST.get("type")
+        record.category = request.POST.get("category")
+        record.custom_category = request.POST.get("custom_category")
+        record.date = request.POST.get("date")
+        record.description = request.POST.get("description")
+        record.save()
 
         return redirect("records")
 
-    res = requests.get(f"{base_url}/records/{pk}/", headers=headers)
-    record = res.json() if res.status_code == 200 else {}
-
     return render(request, "frontend/record_form.html", {"record": record})
-
 
 
 @auth_required
@@ -210,10 +195,7 @@ def delete_record_view(request, pk):
     if request.session.get("role") != "admin":
         return redirect("records")
 
-    token = get_valid_access_token(request)
-    headers = {"Authorization": f"Bearer {token}"}
-    base_url = get_base_url(request)
-
-    requests.delete(f"{base_url}/records/{pk}/", headers=headers)
+    record = Record.objects.get(id=pk)
+    record.delete()
 
     return redirect("records")
